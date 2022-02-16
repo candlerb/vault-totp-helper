@@ -170,8 +170,8 @@ please see the [HCL Specification](https://github.com/hashicorp/hcl).
 |`ca_cert`          |Path of a PEM-encoded CA certificate file used to verify the Vault server's TLS certificate. `-dev` mode ignores this value.
 |`ca_path`          |Path to directory of PEM-encoded CA certificate files used to verify the Vault server's TLS certificate. `-dev` mode ignores this value.
 |`tls_skip_verify`  |Skip TLS certificate verification. Use with caution.
-|`role_id`          |[Required] AppRole role_id for verifying tokens
-|`secret_id`        |[Required] AppRole secret_id for verifying tokens
+|`role_id`          |AppRole role_id for verifying tokens
+|`secret_id`        |AppRole secret_id for verifying tokens
 
 Sample `config.hcl`:
 
@@ -185,7 +185,8 @@ role_id = "d2e6e8f2-1091-477c-a255-603634ea4acd"
 secret_id = "5f134c14-de70-404c-aabf-406f4c799419"
 ```
 
-Ensure that the permissions are set so that normal users cannot read this file.
+If this file contains `role_id` and `secret_id` then ensure that the
+permissions are set so that normal users cannot read it.
 
 You can test `vault-totp-helper` standalone:
 

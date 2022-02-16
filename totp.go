@@ -167,11 +167,11 @@ func ParseTOTPConfig(contents string) (*TOTPConfig, error) {
 	if c.VaultAddr == "" {
 		return nil, fmt.Errorf(`missing config "vault_addr"`)
 	}
-	if c.RoleID == "" {
-		return nil, fmt.Errorf(`missing config "role_id"`)
+	if c.RoleID == "" && c.SecretID != "" {
+		return nil, fmt.Errorf(`cannot set "secret_id" without "role_id"`)
 	}
-	if c.SecretID == "" {
-		return nil, fmt.Errorf(`missing config "secret_id"`)
+	if c.RoleID != "" && c.SecretID == "" {
+		return nil, fmt.Errorf(`cannot set "role_id" without "secret_id"`)
 	}
 	return &c, nil
 }
