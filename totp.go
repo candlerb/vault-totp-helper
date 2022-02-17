@@ -50,8 +50,11 @@ type TOTPConfig struct {
 	CAPath         string `hcl:"ca_path"`
 	TLSSkipVerify  bool   `hcl:"tls_skip_verify"`
 	TLSServerName  string `hcl:"tls_server_name"`
+	TokenFile      string `hcl:"token_file"`
 	RoleID         string `hcl:"role_id"`
 	SecretID       string `hcl:"secret_id"`
+	SecretFile     string `hcl:"secret_file"`
+	SecretEnv      string `hcl:"secret_env"`
 }
 
 // SetTLSParameters sets the TLS parameters for this TOTP agent.
@@ -130,6 +133,16 @@ func LoadTOTPConfig(path string) (*TOTPConfig, error) {
 	return ParseTOTPConfig(string(contents))
 }
 
+func countTrue(bools ...bool) int {
+	c := 0
+	for _, v := range bools {
+		if v {
+			c += 1
+		}
+	}
+	return c
+}
+
 // ParseTOTPConfig parses the given contents as a string for the TOTP
 // configuration.
 func ParseTOTPConfig(contents string) (*TOTPConfig, error) {
@@ -151,8 +164,11 @@ func ParseTOTPConfig(contents string) (*TOTPConfig, error) {
 		"ca_path",
 		"tls_skip_verify",
 		"tls_server_name",
+		"token_file",
 		"role_id",
 		"secret_id",
+		"secret_file",
+		"secret_env",
 	}
 	if err := hclutil.CheckHCLKeys(list, valid); err != nil {
 		return nil, multierror.Prefix(err, "totp_helper:")
@@ -167,31 +183,49 @@ func ParseTOTPConfig(contents string) (*TOTPConfig, error) {
 	if c.VaultAddr == "" {
 		return nil, fmt.Errorf(`missing config "vault_addr"`)
 	}
-	if c.RoleID == "" && c.SecretID != "" {
-		return nil, fmt.Errorf(`cannot set "secret_id" without "role_id"`)
+	if countTrue(c.TokenFile != "", c.RoleID != "") > 1 {
+		return nil, fmt.Errorf(`only one of "token_file" or "role_id" may be provided`)
 	}
-	if c.RoleID != "" && c.SecretID == "" {
-		return nil, fmt.Errorf(`cannot set "role_id" without "secret_id"`)
+	numSecret := countTrue(c.SecretID != "", c.SecretFile != "", c.SecretEnv != "")
+	if (c.RoleID == "" && numSecret > 0) || (c.RoleID != "" && numSecret != 1) {
+		return nil, fmt.Errorf(`"role_id" must be accompanied by exactly one of "secret_id", "secret_file", "secret_env"`)
 	}
 	return &c, nil
 }
 
-func AppRoleLogin(ctx context.Context, c *api.Client, role_id, secret_id string) error {
-	cred := &approle.SecretID{
-		FromString: secret_id,
+func TOTPLogin(ctx context.Context, c *api.Client, config *TOTPConfig) error {
+	if config.TokenFile != "" {
+		token, err := ioutil.ReadFile(config.TokenFile)
+		if err != nil {
+			return err
+		}
+		c.SetToken(string(token))
+		return nil
 	}
-	appRoleAuth, err := approle.NewAppRoleAuth(role_id, cred)
-	if err != nil {
-		return err
+	if config.RoleID != "" {
+		cred := &approle.SecretID{
+			FromString: config.SecretID,
+			FromFile:   config.SecretFile,
+			FromEnv:    config.SecretEnv,
+		}
+		appRoleAuth, err := approle.NewAppRoleAuth(config.RoleID, cred)
+		if err != nil {
+			return err
+		}
+		authInfo, err := c.Auth().Login(ctx, appRoleAuth)
+		if err != nil {
+			return err
+		}
+		if authInfo == nil {
+			return fmt.Errorf("no auth info was returned")
+		}
+		return nil
 	}
-	authInfo, err := c.Auth().Login(ctx, appRoleAuth)
-	if err != nil {
-		return err
+	if os.Getenv("VAULT_TOKEN") != "" {
+		// This is picked up automatically
+		return nil
 	}
-	if authInfo == nil {
-		return fmt.Errorf("no auth info was returned")
-	}
-	return nil
+	return fmt.Errorf("No Vault authentication credentials set")
 }
 
 // Verify the TOTP response string provided by the user against the Vault server.

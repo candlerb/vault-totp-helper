@@ -137,7 +137,7 @@ vault write -f auth/approle/role/totp-validate/secret-id \
 
 Note the returned `secret_id`.  Best practice would be to create a separate
 secret for each host which does TOTP validation, bound to its IP - whether
-you do so is up to you.
+or not you do so is up to you.
 
 You can test this manually:
 
@@ -170,8 +170,21 @@ please see the [HCL Specification](https://github.com/hashicorp/hcl).
 |`ca_cert`          |Path of a PEM-encoded CA certificate file used to verify the Vault server's TLS certificate. `-dev` mode ignores this value.
 |`ca_path`          |Path to directory of PEM-encoded CA certificate files used to verify the Vault server's TLS certificate. `-dev` mode ignores this value.
 |`tls_skip_verify`  |Skip TLS certificate verification. Use with caution.
+|`token_file`       |Path to file containing pre-existing token
 |`role_id`          |AppRole role_id for verifying tokens
-|`secret_id`        |AppRole secret_id for verifying tokens
+|`secret_id`        |secret_id: value provided directly inline
+|`secret_file`      |secret_id: path to file containing value
+|`secret_env`       |secret_id: name of environment variable containing value
+
+If you provide `token_file` then this must point to a file containing a
+pre-existing token to use. This token must be renewed externally.
+
+If you provide `role_id` then you must also include one of `secret_id`,
+`secret_file` or `secret_env`.  If you use `secret_id` then ensure that the
+permissions are set so that normal users cannot read the configuration file.
+
+If no authentication options are set, the Vault client will fall back to its
+default of using the `VAULT_TOKEN` environment variable.
 
 Sample `config.hcl`:
 
@@ -184,9 +197,6 @@ tls_skip_verify = false
 role_id = "d2e6e8f2-1091-477c-a255-603634ea4acd"
 secret_id = "5f134c14-de70-404c-aabf-406f4c799419"
 ```
-
-If this file contains `role_id` and `secret_id` then ensure that the
-permissions are set so that normal users cannot read it.
 
 You can test `vault-totp-helper` standalone:
 

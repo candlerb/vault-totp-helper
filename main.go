@@ -118,10 +118,8 @@ func Run(args []string) error {
 	}
 
 	// Login to Vault
-	if clientConfig.RoleID != "" {
-		if err := AppRoleLogin(ctx, client, clientConfig.RoleID, clientConfig.SecretID); err != nil {
-			return err
-		}
+	if err := TOTPLogin(ctx, client, clientConfig); err != nil {
+		return err
 	}
 
 	// Validate the response
