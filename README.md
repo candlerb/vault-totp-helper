@@ -210,7 +210,7 @@ $
 
 PAM Configuration (sudo)
 ------------------------
-To use TOTP for sudo password, modify the `/etc/pam.d/sshd` file as follows;
+To use TOTP for sudo password, modify the `/etc/pam.d/sudo` file as follows;
 each option will be explained below.
 
 ```
@@ -236,7 +236,7 @@ Next the authentication configuration for `vault-totp-helper` is set.
 |`expose_authtok`            |Binary can read the password from stdin.
 |`log`                       |Path to `vault-totp-helper`'s log file.
 |`vault-totp-helper`         |Absolute path to `vault-totp-helper`'s binary.
-|`config`                    |The path to `vault-totp-helper`'s config file.
+|`-config`                   |The path to `vault-totp-helper`'s config file.
 
 The third line fails the authentication if the TOTP could not be verified;
 it will cause sudo to prompt for another attempt, to its maximum of 3.
