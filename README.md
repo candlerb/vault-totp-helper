@@ -47,12 +47,12 @@ go build .
 sudo cp vault-totp-helper /usr/local/bin/
 ```
 
-Follow the instructions below to modify your SSH server configuration, PAM
-configuration and `vault-totp-helper` configuration. Check if `vault-totp-helper`
-is installed and configured correctly and also is able to communicate with
-Vault server properly. Before verifying `vault-totp-helper`, make sure that the
-Vault server is up and running and it has mounted the TOTP backend.  Also, make
-sure that the mount path of the TOTP backend is properly updated in
+Follow the instructions below to modify your PAM configuration and/or SSH
+server configuration.  Check if `vault-totp-helper` is installed and
+configured correctly and also is able to communicate with Vault server
+properly.  Before verifying `vault-totp-helper`, make sure that the Vault
+server is up and running and it has mounted the TOTP secrets engine.  Also,
+make sure that the mount path of the TOTP backend is properly updated in
 `vault-totp-helper`'s config file, if required.
 
 Configuring Vault for TOTP
@@ -150,6 +150,11 @@ APP_TOKEN=$(vault write -field=token auth/approle/login role_id=$ROLE_ID secret_
 
 VAULT_TOKEN=$APP_TOKEN vault write totp/code/ubuntu code=886531
 ```
+
+When you first use the AppRole it creates an entity with the `role_id` as
+its alias name.  If you wish, you can locate this entity in the Vault web UI
+(select "Entities", "Lookup by Alias Name") and change the entity name to
+something more memorable like `AppRole totp-validate"
 
 `vault-totp-helper` Configuration
 ---------------------------------
