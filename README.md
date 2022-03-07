@@ -262,6 +262,12 @@ The password prompt does not say that a TOTP response is expected:
 [sudo] password for ubuntu:
 ```
 
+You can override this in the `sudoers` configuration file, e.g.
+
+```
+Defaults passprompt="[sudo] TOTP password for %u: ",pwfeedback
+```
+
 Public key or certificate authentication with TOTP as 2FA
 ---------------------------------------------------------
 
