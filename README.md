@@ -221,7 +221,6 @@ each option will be explained below.
 ```
 #@include common-auth
 auth [success=1 default=ignore] pam_exec.so quiet expose_authtok log=/tmp/vault-totp.log /usr/local/bin/vault-totp-helper -config=/etc/vault-totp-helper.d/config.hcl
-auth requisite pam_deny.so
 auth    requisite                       pam_deny.so
 auth    required                        pam_permit.so
 ```
