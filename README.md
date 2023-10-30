@@ -1,4 +1,4 @@
-**NOTE:** This code is derived from [hashicorp/vault-ssh-helper](https://github.com/hashicorp/vault)
+**NOTE:** This code is derived from [hashicorp/vault-ssh-helper](https://github.com/hashicorp/vault-ssh-helper)
 and has the same licence.
 
 vault-totp-helper
