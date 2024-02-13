@@ -1,5 +1,6 @@
 **NOTE:** This code is derived from [hashicorp/vault-ssh-helper](https://github.com/hashicorp/vault-ssh-helper)
-and has the same licence.
+which was under the MPL2.0 license at the time (and still is as of Feb 2024,
+despite the rest of Vault being relicensed to BSL)
 
 vault-totp-helper
 =================
